@@ -101,8 +101,16 @@ else:
         return hasattr(obj, '__call__')
     def b(s):
        return s.encode("latin-1")
-    def binxor(a, b):
-        return bytes([x ^ y for (x, y) in zip(a, b)])
+    if hasattr(int, 'to_bytes') and hasattr(int, 'from_bytes'):
+        _sys_byteorder = sys.byteorder
+        _b2i = int.from_bytes
+        def binxor(a, b):
+            a_int = _b2i(a, _sys_byteorder)
+            b_int = _b2i(b, _sys_byteorder)
+            return (a_int ^ b_int).to_bytes(len(a), _sys_byteorder)
+    else:
+        def binxor(a, b):
+            return bytes([x ^ y for (x, y) in zip(a, b)])
     from base64 import b64encode as _b64encode
     def b64encode(data, chars="+/"):
         if isunicode(chars):
